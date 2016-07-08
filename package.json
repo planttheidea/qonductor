@@ -1,0 +1,70 @@
+{
+  "author": "planttheidea",
+  "ava": {
+    "babel": "inherit",
+    "failFast": true,
+    "files": [
+      "./test/utils.js",
+      "./test/index.js"
+    ],
+    "require": [
+      "babel-register",
+      "babel-polyfill"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/planttheidea/qonductor/issues"
+  },
+  "dependencies": {
+    "waddup": "^1.0.1"
+  },
+  "description": "A simple promise-based queueing system",
+  "devDependencies": {
+    "ava": "0.15.2",
+    "babel": "6.5.2",
+    "babel-cli": "6.10.1",
+    "babel-eslint": "6.1.0",
+    "babel-loader": "6.2.4",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-preset-es2015": "6.9.0",
+    "babel-preset-react": "6.11.1",
+    "babel-preset-stage-0": "6.5.0",
+    "eslint": "3.0.1",
+    "eslint-friendly-formatter": "2.0.5",
+    "eslint-loader": "1.4.0",
+    "html-webpack-plugin": "2.22.0",
+    "in-publish": "^2.0.0",
+    "react": "15.2.0",
+    "react-dom": "15.2.0",
+    "webpack": "1.13.1",
+    "webpack-dev-server": "1.14.1"
+  },
+  "homepage": "https://github.com/planttheidea/crio#readme",
+  "keywords": [
+    "immutable",
+    "crio"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "name": "qonductor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/planttheidea/crio.git"
+  },
+  "scripts": {
+    "build": "NODE_ENV=development ./node_modules/webpack/bin/webpack.js --progress --colors",
+    "build-minified": "NODE_ENV=production ./node_modules/webpack/bin/webpack.js --progress --colors --config=webpack.config.minified.js",
+    "compile-for-publish": "npm run lint && npm run test && npm run test-production && npm run transpile && npm run dist",
+    "dev": "NODE_ENV=development ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.dev.js",
+    "dev-production": "NODE_ENV=production ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.dev.js",
+    "dist": "npm run build && npm run build-minified",
+    "lint": "NODE_ENV=test ./node_modules/eslint/bin/eslint.js src",
+    "prepublish": "in-publish && npm run compile-for-publish || in-install",
+    "test": "NODE_ENV=test ava --no-cache",
+    "test-production": "NODE_ENV=production ava --no-cache",
+    "test:watch": "NODE_ENV=test ava --no-cache --watch",
+    "test-production:watch": "NODE_ENV=production ava --no-cache --watch",
+    "transpile": "./node_modules/babel-cli/lib/babel/index.js -d lib/ src/"
+  },
+  "version": "2.5.0"
+}
