@@ -9,6 +9,7 @@ class CustomError extends Error {
     if (Error.hasOwnProperty('captureStackTrace')) {
       Error.captureStackTrace(this, this.constructor);
     } else {
+      
       Object.defineProperty(this, 'stack', {
         value: (new Error()).stack
       });

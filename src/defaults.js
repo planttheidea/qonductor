@@ -1,8 +1,12 @@
-let defaults = {
+const DEFAULTS = {
   autoStart: true,
   keepHistory: true,
   maxConcurrency: 10,
   type: 'fifo'
+};
+
+let currentDefaults = {
+  ...DEFAULTS
 };
 
 /**
@@ -11,7 +15,20 @@ let defaults = {
  * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
  */
 const getDefaults = () => {
-  return defaults;
+  return currentDefaults;
+};
+
+/**
+ * reset the defaults to their original setting
+ * 
+ * @return {object}
+ */
+const resetDefaults = () => {
+  currentDefaults = {
+    ...DEFAULTS
+  };
+  
+  return currentDefaults;
 };
 
 /**
@@ -22,18 +39,20 @@ const getDefaults = () => {
  */
 const setDefaults = (newDefaults = {}) => {
   Object.keys(newDefaults).forEach((key) => {
-    if (defaults.hasOwnProperty(key)) {
-      defaults[key] = newDefaults[key];
+    if (currentDefaults.hasOwnProperty(key)) {
+      currentDefaults[key] = newDefaults[key];
     }
   });
   
-  return defaults;
+  return currentDefaults;
 };
 
 export {getDefaults};
+export {resetDefaults};
 export {setDefaults};
 
 export default {
   getDefaults,
+  resetDefaults,
   setDefaults
 };

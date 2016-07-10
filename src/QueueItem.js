@@ -32,8 +32,40 @@ const getDone = (success, fail) => {
   };
 };
 
+/**
+ * on fail, run the completion function and return a
+ * rejected Promise to trigger the next catch
+ *
+ * @param {QueueItem} queueItem
+ * @param {function} onComplete
+ * @return {function(error: Error): Promise}
+ */
+const getOnFail = (queueItem, onComplete) => {
+  return (error) => {
+    onComplete(queueItem.id, queueItem);
+
+    return Promise.reject(error);
+  };
+};
+
+/**
+ * on success, run the completion function and return the data
+ * to trigger the next then
+ *
+ * @param {QueueItem} queueItem
+ * @param {function} onComplete
+ * @return {function(data: any): any}
+ */
+const getOnSuccess = (queueItem, onComplete) => {
+  return (data) => {
+    onComplete(queueItem.id, queueItem);
+
+    return data;
+  };
+};
+
 class QueueItem {
-  constructor(id, fn, onSuccess, onFail) {
+  constructor(id, fn, onComplete) {
     Object.assign(this, {
       cancelId: null,
       id,
@@ -41,6 +73,9 @@ class QueueItem {
       promiseId: null,
       status: statuses.PENDING
     });
+
+    const onFail = getOnFail(this, onComplete);
+    const onSuccess = getOnSuccess(this, onComplete);
 
     this.promise = this._createPromiseWrapper(fn, onSuccess, onFail);
   }

@@ -5,10 +5,15 @@ import {
 
 import {
   getDefaults,
+  resetDefaults,
   setDefaults
 } from './defaults';
 
 import QueueItem from './QueueItem';
+
+import {
+  isObject
+} from './utils';
 
 class Qonductor {
   constructor(options = {}) {
@@ -124,17 +129,7 @@ class Qonductor {
    */
   add(fn) {
     const index = this.currentIndex;
-    const onSuccess = (data) => {
-      this._complete(queueItem.id, queueItem);
-
-      return data;
-    };
-    const onFail = (error) => {
-      this._complete(queueItem.id, queueItem);
-
-      return Promise.reject(error);
-    };
-    const queueItem = new QueueItem(index, fn, onSuccess, onFail);
+    const queueItem = new QueueItem(index, fn, this._complete.bind(this));
 
     this.queue[index] = queueItem;
 
@@ -164,12 +159,34 @@ class Qonductor {
   }
 
   /**
+   * get the global defaults for Qonductor
+   *
+   * @returns {object}
+   */
+  static getDefaults() {
+    return getDefaults();
+  }
+
+  /**
+   * reset the global defaults for Qonductor
+   *
+   * @returns {object}
+   */
+  static resetDefaults() {
+    return resetDefaults();
+  }
+
+  /**
    * set the global defaults for Qonductor
    *
    * @param {object} newDefaults={}
    * @returns {object}
    */
   static setDefaults(newDefaults = {}) {
+    if (!isObject(newDefaults)) {
+      throw new SyntaxError('Defaults assignment must be passed an object.');
+    }
+    
     return setDefaults(newDefaults);
   }
 
