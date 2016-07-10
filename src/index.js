@@ -58,7 +58,9 @@ class Qonductor {
    */
   _addQueueItemCancel(queueItem) {
     return (message) => {
-      queueItem._publishCancellation(message);
+      if (queueItem.status === statuses.PENDING || queueItem.status === statuses.RUNNING) {
+        queueItem._publishCancellation(message);
+      }
     };
   }
 

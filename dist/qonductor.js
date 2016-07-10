@@ -127,7 +127,9 @@ var Qonductor =
 	    key: '_addQueueItemCancel',
 	    value: function _addQueueItemCancel(queueItem) {
 	      return function (message) {
-	        queueItem._publishCancellation(message);
+	        if (queueItem.status === _constants.statuses.PENDING || queueItem.status === _constants.statuses.RUNNING) {
+	          queueItem._publishCancellation(message);
+	        }
 	      };
 	    }
 	
