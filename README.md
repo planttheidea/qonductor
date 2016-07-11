@@ -96,7 +96,11 @@ Cancels all remaining running / pending items in the queue.
 
 **.start()**
 
-If `autoStart` is set to `false`, then this is used to programmatically begin the processing of items in the queue.
+If `isRunning` is set to `false`, then this is used to start the processing of items in the queue.
+
+**.stop()**
+
+This will set `isRunning` to `false`, which will prevent all items in `PENDING` state from being processed but keep them in the queue. Item's already in `RUNNING` state will finish as normal.
 
 #### Global Methods
 

@@ -75,6 +75,14 @@ class App extends Component {
         });
 
       queue.start();
+
+      setTimeout(() => {
+        queue.stop();
+
+        setTimeout(() => {
+          queue.start();
+        }, 10000);
+      }, 1500);
     }
   }
 

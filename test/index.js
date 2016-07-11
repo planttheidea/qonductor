@@ -21,8 +21,7 @@ test('if Qonductor returns a proper object', (t) => {
     completedCount: 0,
     currentIndex: 0,
     keepHistory: true,
-    hasFinished: false,
-    hasStarted: false,
+    isRunning: false,
     maxConcurrency: 10,
     pending: {},
     pendingCount: 0,
@@ -88,7 +87,7 @@ test('if _complete will convert the queueItem to completed', sinon.test(function
 
   queueItem.run();
 
-  queue.hasStarted = true;
+  queue.isRunning = true;
   queue.running[0] = queueItem;
   queue.runningCount = 1;
 
@@ -113,7 +112,8 @@ test('if _getNextIndex gets the correct index based on the type', (t) => {
 });
 
 let secondQueue = new Qonductor({
-      autoStart: false
+      autoStart: false,
+      maxConcurrency: 1
     }),
     secondQueueItem;
 
@@ -121,7 +121,7 @@ test('if add will add an item to the queue', (t) => {
   secondQueueItem = secondQueue.add((done) => {
     setTimeout(() => {
       done('finished');
-    }, 30000);
+    }, 10000);
   })
     .catch(() => {});
 
@@ -138,7 +138,6 @@ test('if add will add an item to the queue', (t) => {
 test('if start will start the item in the queue', (t) => {
   secondQueue.start();
 
-
   t.deepEqual(Object.keys(secondQueue.completed), []);
   t.is(secondQueue.completedCount, 0);
   t.deepEqual(Object.keys(secondQueue.running), ['0']);
@@ -147,6 +146,12 @@ test('if start will start the item in the queue', (t) => {
   t.is(secondQueue.pendingCount, 0);
 
   t.is(secondQueue.running[0].status, 'RUNNING');
+});
+
+test('if stop will stop the queue from processing pending items', (t) => {
+  secondQueue.stop();
+
+  t.false(secondQueue.isRunning);
 });
 
 test('if clear will cancel all items in the queue', async (t) => {

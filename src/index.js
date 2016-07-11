@@ -37,8 +37,7 @@ class Qonductor {
       completedCount: 0,
       currentIndex: 0,
       keepHistory,
-      hasFinished: false,
-      hasStarted: false,
+      isRunning: false,
       maxConcurrency,
       pending: {},
       pendingCount: 0,
@@ -91,16 +90,16 @@ class Qonductor {
 
     delete this.queue[index];
 
-    if (this.hasStarted && this.pendingCount) {
-      this.start();
+    if (this.isRunning && this.pendingCount) {
+      this._runQueue();
     } else if (!this.runningCount && !this.pendingCount) {
-      this.hasFinished = true;
+      this.isRunning = false;
     }
   }
 
   /**
    * based on the type, return the next index to process
-   * 
+   *
    * @param {array<string>} keys
    * @param {string} type
    * @return {string}
@@ -114,7 +113,7 @@ class Qonductor {
     switch (type) {
       case types.LIFO:
         return Math.max.apply(this, keys);
-      
+
       case types.SIRO:
         return keys[Math.floor(Math.random() * keys.length)];
 
@@ -124,8 +123,35 @@ class Qonductor {
   }
 
   /**
+   * run the items in the queue up to the maxConcurrency limit
+   *
+   * @private
+   */
+  _runQueue() {
+    let running = this.runningCount;
+
+    while (++running <= this.maxConcurrency) {
+      const index = this._getNextIndex(Object.keys(this.pending), this.type);
+
+      if (index === -1) {
+        break;
+      }
+
+      const queueItem = this.pending[index];
+
+      this.running[index] = queueItem;
+      this.runningCount++;
+
+      delete this.pending[index];
+      this.pendingCount--;
+
+      queueItem.run();
+    }
+  }
+
+  /**
    * add the function to the queue
-   * 
+   *
    * @param {function} fn
    * @return {Promise}
    */
@@ -142,7 +168,7 @@ class Qonductor {
 
     queueItem.promise.cancel = this._addQueueItemCancel(queueItem);
 
-    if (this.autoStart && this.runningCount < this.maxConcurrency) {
+    if (this.autoStart && !this.isRunning) {
       this.start();
     }
 
@@ -188,7 +214,7 @@ class Qonductor {
     if (!isObject(newDefaults)) {
       throw new SyntaxError('Defaults assignment must be passed an object.');
     }
-    
+
     return setDefaults(newDefaults);
   }
 
@@ -196,28 +222,20 @@ class Qonductor {
    * kick off the processing of the queue
    */
   start() {
-    this.hasStarted = true;
-    this.hasFinished = false;
-
-    let running = this.runningCount;
-
-    while (++running <= this.maxConcurrency) {
-      const index = this._getNextIndex(Object.keys(this.pending), this.type);
-
-      if (index === -1) {
-        break;
-      }
-
-      const queueItem = this.pending[index];
-
-      this.running[index] = queueItem;
-      this.runningCount++;
-
-      delete this.pending[index];
-      this.pendingCount--;
-
-      queueItem.run();
+    if (this.isRunning) {
+      return;
     }
+
+    this.isRunning = true;
+
+    this._runQueue();
+  }
+
+  /**
+   * stop processing pending queue items
+   */
+  stop() {
+    this.isRunning = false;
   }
 }
 

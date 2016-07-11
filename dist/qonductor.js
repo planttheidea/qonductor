@@ -102,8 +102,7 @@ var Qonductor =
 	      completedCount: 0,
 	      currentIndex: 0,
 	      keepHistory: keepHistory,
-	      hasFinished: false,
-	      hasStarted: false,
+	      isRunning: false,
 	      maxConcurrency: maxConcurrency,
 	      pending: {},
 	      pendingCount: 0,
@@ -163,16 +162,16 @@ var Qonductor =
 	
 	      delete this.queue[index];
 	
-	      if (this.hasStarted && this.pendingCount) {
-	        this.start();
+	      if (this.isRunning && this.pendingCount) {
+	        this._runQueue();
 	      } else if (!this.runningCount && !this.pendingCount) {
-	        this.hasFinished = true;
+	        this.isRunning = false;
 	      }
 	    }
 	
 	    /**
 	     * based on the type, return the next index to process
-	     * 
+	     *
 	     * @param {array<string>} keys
 	     * @param {string} type
 	     * @return {string}
@@ -199,8 +198,38 @@ var Qonductor =
 	    }
 	
 	    /**
+	     * run the items in the queue up to the maxConcurrency limit
+	     *
+	     * @private
+	     */
+	
+	  }, {
+	    key: '_runQueue',
+	    value: function _runQueue() {
+	      var running = this.runningCount;
+	
+	      while (++running <= this.maxConcurrency) {
+	        var index = this._getNextIndex(Object.keys(this.pending), this.type);
+	
+	        if (index === -1) {
+	          break;
+	        }
+	
+	        var queueItem = this.pending[index];
+	
+	        this.running[index] = queueItem;
+	        this.runningCount++;
+	
+	        delete this.pending[index];
+	        this.pendingCount--;
+	
+	        queueItem.run();
+	      }
+	    }
+	
+	    /**
 	     * add the function to the queue
-	     * 
+	     *
 	     * @param {function} fn
 	     * @return {Promise}
 	     */
@@ -220,7 +249,7 @@ var Qonductor =
 	
 	      queueItem.promise.cancel = this._addQueueItemCancel(queueItem);
 	
-	      if (this.autoStart && this.runningCount < this.maxConcurrency) {
+	      if (this.autoStart && !this.isRunning) {
 	        this.start();
 	      }
 	
@@ -257,28 +286,23 @@ var Qonductor =
 	     * kick off the processing of the queue
 	     */
 	    value: function start() {
-	      this.hasStarted = true;
-	      this.hasFinished = false;
-	
-	      var running = this.runningCount;
-	
-	      while (++running <= this.maxConcurrency) {
-	        var index = this._getNextIndex(Object.keys(this.pending), this.type);
-	
-	        if (index === -1) {
-	          break;
-	        }
-	
-	        var queueItem = this.pending[index];
-	
-	        this.running[index] = queueItem;
-	        this.runningCount++;
-	
-	        delete this.pending[index];
-	        this.pendingCount--;
-	
-	        queueItem.run();
+	      if (this.isRunning) {
+	        return;
 	      }
+	
+	      this.isRunning = true;
+	
+	      this._runQueue();
+	    }
+	
+	    /**
+	     * stop processing pending queue items
+	     */
+	
+	  }, {
+	    key: 'stop',
+	    value: function stop() {
+	      this.isRunning = false;
 	    }
 	  }], [{
 	    key: 'getDefaults',
