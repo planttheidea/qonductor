@@ -43,7 +43,7 @@
     "webpack": "1.13.1",
     "webpack-dev-server": "1.14.1"
   },
-  "homepage": "https://github.com/planttheidea/crio#readme",
+  "homepage": "https://github.com/planttheidea/qonductor#readme",
   "keywords": [
     "queue",
     "async",
@@ -56,7 +56,7 @@
   "name": "qonductor",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/planttheidea/crio.git"
+    "url": "git+https://github.com/planttheidea/qonductor.git"
   },
   "scripts": {
     "build": "NODE_ENV=development ./node_modules/webpack/bin/webpack.js --progress --colors",
