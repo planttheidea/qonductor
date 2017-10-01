@@ -76,24 +76,24 @@ var Qonductor =
 	
 	var Qonductor = function () {
 	  function Qonductor() {
-	    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
 	    _classCallCheck(this, Qonductor);
 	
-	    var _getDefaults2 = (0, _defaults.getDefaults)();
+	    var _getDefaults2 = (0, _defaults.getDefaults)(),
+	        defaultAutoStart = _getDefaults2.autoStart,
+	        defaultKeepHistory = _getDefaults2.keepHistory,
+	        defaultMaxConcurrency = _getDefaults2.maxConcurrency,
+	        defaultType = _getDefaults2.type;
 	
-	    var defaultAutoStart = _getDefaults2.autoStart;
-	    var defaultKeepHistory = _getDefaults2.keepHistory;
-	    var defaultMaxConcurrency = _getDefaults2.maxConcurrency;
-	    var defaultType = _getDefaults2.type;
-	    var _options$autoStart = options.autoStart;
-	    var autoStart = _options$autoStart === undefined ? defaultAutoStart : _options$autoStart;
-	    var _options$keepHistory = options.keepHistory;
-	    var keepHistory = _options$keepHistory === undefined ? defaultKeepHistory : _options$keepHistory;
-	    var _options$maxConcurren = options.maxConcurrency;
-	    var maxConcurrency = _options$maxConcurren === undefined ? defaultMaxConcurrency : _options$maxConcurren;
-	    var _options$type = options.type;
-	    var type = _options$type === undefined ? defaultType : _options$type;
+	    var _options$autoStart = options.autoStart,
+	        autoStart = _options$autoStart === undefined ? defaultAutoStart : _options$autoStart,
+	        _options$keepHistory = options.keepHistory,
+	        keepHistory = _options$keepHistory === undefined ? defaultKeepHistory : _options$keepHistory,
+	        _options$maxConcurren = options.maxConcurrency,
+	        maxConcurrency = _options$maxConcurren === undefined ? defaultMaxConcurrency : _options$maxConcurren,
+	        _options$type = options.type,
+	        type = _options$type === undefined ? defaultType : _options$type;
 	
 	
 	    Object.assign(this, {
@@ -332,7 +332,7 @@ var Qonductor =
 	  }, {
 	    key: 'setDefaults',
 	    value: function setDefaults() {
-	      var newDefaults = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	      var newDefaults = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
 	      if (!(0, _utils.isObject)(newDefaults)) {
 	        throw new SyntaxError('Defaults assignment must be passed an object.');
@@ -426,7 +426,7 @@ var Qonductor =
 	 * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
 	 */
 	var setDefaults = function setDefaults() {
-	  var newDefaults = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	  var newDefaults = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
 	  Object.keys(newDefaults).forEach(function (key) {
 	    if (currentDefaults.hasOwnProperty(key)) {
@@ -568,8 +568,8 @@ var Qonductor =
 	        var done = getDone(success, fail);
 	
 	        _this.cancelId = (0, _waddup.subscribe)(_constants.statuses.CANCELLED, function (topic, _ref) {
-	          var id = _ref.id;
-	          var message = _ref.message;
+	          var id = _ref.id,
+	              message = _ref.message;
 	
 	          if (id === _this.id) {
 	            _this.isCancelled = true;
@@ -751,7 +751,7 @@ var Qonductor =
 	  function CustomError(message) {
 	    _classCallCheck(this, CustomError);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CustomError).call(this));
+	    var _this = _possibleConstructorReturn(this, (CustomError.__proto__ || Object.getPrototypeOf(CustomError)).call(this));
 	
 	    if (Error.hasOwnProperty('captureStackTrace')) {
 	      Error.captureStackTrace(_this, _this.constructor);
@@ -775,12 +775,12 @@ var Qonductor =
 	  _inherits(QueueError, _CustomError);
 	
 	  function QueueError() {
-	    var message = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	    var type = arguments.length <= 1 || arguments[1] === undefined ? _constants.statuses.FAILED : arguments[1];
+	    var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _constants.statuses.FAILED;
 	
 	    _classCallCheck(this, QueueError);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(QueueError).call(this, 'Queue promise was rejected with status ' + type + (message ? ': ' : '.') + message));
+	    return _possibleConstructorReturn(this, (QueueError.__proto__ || Object.getPrototypeOf(QueueError)).call(this, 'Queue promise was rejected with status ' + type + (message ? ': ' : '.') + message));
 	  }
 	
 	  return QueueError;
