@@ -3,8 +3,13 @@
   "ava": {
     "babel": "inherit",
     "failFast": true,
-    "files": ["test/*.js"],
-    "require": ["babel-register", "babel-polyfill"],
+    "files": [
+      "test/*.js"
+    ],
+    "require": [
+      "babel-register",
+      "babel-polyfill"
+    ],
     "verbose": true
   },
   "bugs": {
@@ -38,7 +43,13 @@
     "webpack-dev-server": "^2.9.1"
   },
   "homepage": "https://github.com/planttheidea/qonductor#readme",
-  "keywords": ["queue", "async", "qonductor", "throttle", "promise"],
+  "keywords": [
+    "queue",
+    "async",
+    "qonductor",
+    "throttle",
+    "promise"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
   "name": "qonductor",
@@ -48,11 +59,9 @@
   },
   "scripts": {
     "build": "NODE_ENV=development ./node_modules/webpack/bin/webpack.js --progress --colors",
-    "build:minified":
-      "NODE_ENV=production ./node_modules/webpack/bin/webpack.js --progress --colors --config=webpack.config.minified.js",
+    "build:minified": "NODE_ENV=production ./node_modules/webpack/bin/webpack.js --progress --colors --config=webpack.config.minified.js",
     "clean": "rimraf lib && rimraf dist",
-    "dev":
-      "NODE_ENV=development ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.dev.js",
+    "dev": "NODE_ENV=development ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.dev.js",
     "dist": "npm run build && npm run build:minified",
     "lint": "eslint --max-warnings 0 src",
     "lint:fix": "npm run lint -- --fix",
@@ -62,5 +71,5 @@
     "test:watch": "npm run test -- --watch",
     "transpile": "./node_modules/babel-cli/lib/babel/index.js -d lib/ src/"
   },
-  "version": "1.1.1"
+  "version": "1.1.2"
 }
