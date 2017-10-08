@@ -1,11 +1,7 @@
-import React, {
-  Component
-} from 'react';
-import {
-    render
-} from 'react-dom';
+import React, {Component} from 'react';
+import {render} from 'react-dom';
 
-import Qonductor from '../src'
+import Qonductor from '../src';
 
 Qonductor.setDefaults({
   autoStart: false
@@ -48,7 +44,21 @@ class App extends Component {
       const ms = Math.round(Math.random() * 1000);
       const timeout = returnFromGenerateTimeout(index, ms);
 
-      queue.add(timeout)
+      queue
+        .add(timeout)
+        .then((id) => {
+          console.log('resolved', id);
+
+          this.setState({
+            results: [
+              ...this.state.results,
+              {
+                isError: false,
+                message: `Completed: ${queue.completedCount}, Running: ${queue.runningCount}, Pending: ${queue.pendingCount}`
+              }
+            ]
+          });
+        })
         .catch((exception) => {
           console.error(exception);
 
@@ -58,17 +68,6 @@ class App extends Component {
               {
                 isError: true,
                 message: exception.message
-              }
-            ]
-          });
-        })
-        .then(() => {
-          this.setState({
-            results: [
-              ...this.state.results,
-              {
-                isError: false,
-                message: `Completed: ${queue.completedCount}, Running: ${queue.runningCount}, Pending: ${queue.pendingCount}`
               }
             ]
           });
@@ -95,9 +94,7 @@ class App extends Component {
               key={`result-${index}`}
               style={STYLES.container}
             >
-              <span style={isError ? STYLES.error : undefined}>
-                {message}
-              </span>
+              <span style={isError ? STYLES.error : undefined}>{message}</span>
             </div>
           );
         })}
@@ -110,8 +107,6 @@ const div = document.createElement('div');
 
 div.id = 'app-container';
 
-render((
-    <App/>
-), div);
+render(<App />, div);
 
 document.body.appendChild(div);

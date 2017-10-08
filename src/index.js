@@ -1,75 +1,73 @@
-import {
-  statuses,
-  types
-} from './constants';
+// external dependencies
+import isFunction from 'lodash/isFunction';
+import isPlainObject from 'lodash/isPlainObject';
 
-import {
-  getDefaults,
-  resetDefaults,
-  setDefaults
-} from './defaults';
-
+// classes
 import QueueItem from './QueueItem';
 
-import {
-  isObject
-} from './utils';
+// constants
+import {STATUSES, TYPES} from './constants';
+
+// defaults
+import {getDefaults, resetDefaults, setDefaults} from './defaults';
 
 class Qonductor {
   constructor(options = {}) {
-    const {
-      autoStart: defaultAutoStart,
-      keepHistory: defaultKeepHistory,
-      maxConcurrency: defaultMaxConcurrency,
-      type: defaultType
-    } = getDefaults();
+    const {type, ...directlyAssignedValues} = {...getDefaults(), ...options};
 
-    const {
-      autoStart = defaultAutoStart,
-      keepHistory = defaultKeepHistory,
-      maxConcurrency = defaultMaxConcurrency,
-      type = defaultType
-    } = options;
-
-    Object.assign(this, {
-      autoStart,
-      completed: {},
-      completedCount: 0,
-      currentIndex: 0,
-      keepHistory,
-      isRunning: false,
-      maxConcurrency,
-      pending: {},
-      pendingCount: 0,
-      queue: {},
-      running: {},
-      runningCount: 0,
-      type: type.toLowerCase()
+    Object.keys(directlyAssignedValues).forEach((key) => {
+      this[key] = directlyAssignedValues[key];
     });
+
+    this.type = type.toLowerCase();
   }
 
+  completed = {};
+  completedCount = 0;
+  currentIndex = 0;
+  isRunning = false;
+  pending = {};
+  pendingCount = 0;
+  queue = {};
+  running = {};
+  runningCount = 0;
+
   /**
+   * @private
+   *
+   * @function _addQueueItemCancel
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * add the cancel function to the queueItem
-   * 
+   *
    * @param {object} queueItem
    * @return {function(message): void}
    * @private
    */
   _addQueueItemCancel(queueItem) {
     return (message) => {
-      if (queueItem.status === statuses.PENDING || queueItem.status === statuses.RUNNING) {
+      if (queueItem.status === STATUSES.PENDING || queueItem.status === STATUSES.RUNNING) {
         queueItem._publishCancellation(message);
       }
     };
   }
 
   /**
+   * @private
+   *
+   * @function _complete
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * remove the queueItem from the running / pending list and
    * move to completed
-   * 
+   *
    * @param {number} index
    * @param {object} queueItem
-   * @private
+   * @returns {void}
    */
   _complete(index, queueItem) {
     if (!this.completed[index]) {
@@ -91,13 +89,22 @@ class Qonductor {
     delete this.queue[index];
 
     if (this.isRunning && this.pendingCount) {
-      this._runQueue();
-    } else if (!this.runningCount && !this.pendingCount) {
+      return this._runQueue();
+    }
+
+    if (!this.runningCount && !this.pendingCount) {
       this.isRunning = false;
     }
   }
 
   /**
+   * @private
+   *
+   * @function _getNextIndex
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * based on the type, return the next index to process
    *
    * @param {array<string>} keys
@@ -111,10 +118,10 @@ class Qonductor {
     }
 
     switch (type) {
-      case types.LIFO:
+      case TYPES.LIFO:
         return Math.max.apply(this, keys);
 
-      case types.SIRO:
+      case TYPES.SIRO:
         return keys[Math.floor(Math.random() * keys.length)];
 
       default:
@@ -123,6 +130,13 @@ class Qonductor {
   }
 
   /**
+   * @private
+   *
+   * @function _runQueue
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * run the items in the queue up to the maxConcurrency limit
    *
    * @private
@@ -150,14 +164,67 @@ class Qonductor {
   }
 
   /**
+   * @function getDefaults
+   * @memberof Qonductor
+   * @static
+   *
+   * @description
+   * get the global defaults for Qonductor
+   *
+   * @returns {object}
+   */
+  static getDefaults = getDefaults;
+
+  /**
+   * @function resetDefaults
+   * @memberof Qonductor
+   * @static
+   *
+   * @description
+   * reset the global defaults for Qonductor
+   *
+   * @returns {object}
+   */
+  static resetDefaults = resetDefaults;
+
+  /**
+   * @function setDefaults
+   * @memberof Qonductor
+   * @static
+   *
+   * @description
+   * set the global defaults for Qonductor
+   *
+   * @param {object} newDefaults={}
+   * @returns {object}
+   */
+  static setDefaults(newDefaults = {}) {
+    if (!isPlainObject(newDefaults)) {
+      throw new SyntaxError('Defaults assignment must be passed an object.');
+    }
+
+    return setDefaults(newDefaults);
+  }
+
+  /**
+   * @function add
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * add the function to the queue
    *
-   * @param {function} fn
+   * @param {string} id the id to optionally assign
+   * @param {function} fn the asynchronous method
    * @return {Promise}
    */
-  add(fn) {
+  add(id, fn) {
     const index = this.currentIndex;
-    const queueItem = new QueueItem(index, fn, this._complete.bind(this));
+
+    const queueId = isFunction(id) ? index : id;
+    const queueFunction = fn || id;
+
+    const queueItem = new QueueItem(queueId, queueFunction, this._complete.bind(this));
 
     this.queue[index] = queueItem;
 
@@ -176,49 +243,27 @@ class Qonductor {
   }
 
   /**
+   * @function clear
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * cancel all remaining promises in the queue
    */
   clear() {
     Object.keys(this.queue).forEach((key) => {
-      if (this.queue[key].status !== statuses.COMPLETED) {
+      if (this.queue[key].status !== STATUSES.COMPLETED) {
         this.queue[key].promise.cancel();
       }
     });
   }
 
   /**
-   * get the global defaults for Qonductor
+   * @function start
+   * @memberof Qonductor
+   * @instance
    *
-   * @returns {object}
-   */
-  static getDefaults() {
-    return getDefaults();
-  }
-
-  /**
-   * reset the global defaults for Qonductor
-   *
-   * @returns {object}
-   */
-  static resetDefaults() {
-    return resetDefaults();
-  }
-
-  /**
-   * set the global defaults for Qonductor
-   *
-   * @param {object} newDefaults={}
-   * @returns {object}
-   */
-  static setDefaults(newDefaults = {}) {
-    if (!isObject(newDefaults)) {
-      throw new SyntaxError('Defaults assignment must be passed an object.');
-    }
-
-    return setDefaults(newDefaults);
-  }
-
-  /**
+   * @description
    * kick off the processing of the queue
    */
   start() {
@@ -232,6 +277,11 @@ class Qonductor {
   }
 
   /**
+   * @function stop
+   * @memberof Qonductor
+   * @instance
+   *
+   * @description
    * stop processing pending queue items
    */
   stop() {

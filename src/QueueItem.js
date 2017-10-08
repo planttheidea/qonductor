@@ -1,86 +1,59 @@
-import {
-  publish,
-  subscribe,
-  unsubscribe
-} from 'waddup';
+// external dependencies
+import isFunction from 'lodash/isFunction';
+import {publish, subscribe, unsubscribe} from 'waddup';
 
-import {
-  statuses
-} from './constants';
-
+// classes
 import QueueError from './QueueError';
 
-import {
-  isFunction
-} from './utils';
+// constants
+import {STATUSES} from './constants';
+
+// utils
+import {getDone, getOnFail, getOnSuccess} from './utils';
 
 /**
- * get the done function with assigned success / fail actions based
- * on parameters passed to it
- * 
- * @param {function} success
- * @param {function} fail
- * @return {function(data: string, error: QueueError): void}
+ * @class QueueItem
+ * @classdesc Item in the queue of promises to be resolved
  */
-const getDone = (success, fail) => {
-  return (data, error) => {
-    if (error) {
-      fail(error);
-    } else {
-      success(data);
-    }
-  };
-};
-
-/**
- * on fail, run the completion function and return a
- * rejected Promise to trigger the next catch
- *
- * @param {QueueItem} queueItem
- * @param {function} onComplete
- * @return {function(error: Error): Promise}
- */
-const getOnFail = (queueItem, onComplete) => {
-  return (error) => {
-    onComplete(queueItem.id, queueItem);
-
-    return Promise.reject(error);
-  };
-};
-
-/**
- * on success, run the completion function and return the data
- * to trigger the next then
- *
- * @param {QueueItem} queueItem
- * @param {function} onComplete
- * @return {function(data: any): any}
- */
-const getOnSuccess = (queueItem, onComplete) => {
-  return (data) => {
-    onComplete(queueItem.id, queueItem);
-
-    return data;
-  };
-};
-
 class QueueItem {
   constructor(id, fn, onComplete) {
-    Object.assign(this, {
-      cancelId: null,
-      id,
-      isCancelled: false,
-      promiseId: null,
-      status: statuses.PENDING
-    });
+    this.id = id;
+    this.promise = this._createPromiseWrapper(fn, getOnSuccess(this, onComplete), getOnFail(this, onComplete));
+  }
 
-    const onFail = getOnFail(this, onComplete);
-    const onSuccess = getOnSuccess(this, onComplete);
+  cancelId = null;
+  isCancelled = false;
+  promiseId = null;
+  status = STATUSES.PENDING;
 
-    this.promise = this._createPromiseWrapper(fn, onSuccess, onFail);
+  /**
+   * @private
+   *
+   * @function _cancelPromise
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
+   * cancel the existing promise, rejecting it with the message provided
+   *
+   * @param {function} reject
+   * @param {string} message
+   * @private
+   */
+  _cancelPromise(reject, message) {
+    this.status = STATUSES.CANCELLED;
+
+    reject(new QueueError(message, STATUSES.CANCELLED));
   }
 
   /**
+   * @private
+   *
+   * @function _createPromiseWrapper
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
    * create the promise wrapper for the function passed
    *
    * @param {function} fn
@@ -90,100 +63,44 @@ class QueueItem {
    * @private
    */
   _createPromiseWrapper(fn, onSuccess, onFail) {
-    const queuedFunction = isFunction(fn) ? fn : (done) => {
-      return done(fn);
-    };
-    const unsubscribeOnSuccess = this._getUnsubscribeOnResolve();
-    const unsubscribeOnFail = this._getUnsubscribeOnReject();
+    const queuedFunction = isFunction(fn)
+      ? fn
+      : (done) => {
+        return done(fn);
+      };
 
     return new Promise((resolve, reject) => {
-      const success = this._resolvePromise(resolve);
-      const fail = this._rejectPromise(reject);
-      const done = getDone(success, fail);
+      const done = getDone(this._resolvePromise(resolve), this._rejectPromise(reject));
 
-      this.cancelId = subscribe(statuses.CANCELLED, (topic, {id, message}) => {
-        if (id === this.id) {
+      this.cancelId = subscribe(STATUSES.CANCELLED, ({data}) => {
+        if (data.id === this.id) {
           this.isCancelled = true;
 
-          this._cancelPromise(reject, message);
+          this._cancelPromise(reject, data.message);
         }
       });
 
-      this.promiseId = subscribe(statuses.RUNNING, (topic, id) => {
-        if (id === this.id) {
+      this.promiseId = subscribe(STATUSES.RUNNING, ({data}) => {
+        if (data.id === this.id) {
           queuedFunction(done);
-
           unsubscribe(this.promiseId);
         }
       });
     })
-      .then(unsubscribeOnSuccess)
-      .catch(unsubscribeOnFail)
+      .then(this._getUnsubscribeOnResolve())
+      .catch(this._getUnsubscribeOnReject())
       .then(onSuccess)
       .catch(onFail);
   }
 
   /**
-   * cancel the existing promise, rejecting it with the message provided
-   *
-   * @param {function} reject
-   * @param {string} message
    * @private
-   */
-  _cancelPromise(reject, message) {
-    this.status = statuses.CANCELLED;
-
-    reject(new QueueError(message, statuses.CANCELLED));
-  }
-
-  /**
-   * publish the cancellation
    *
-   * @param {string} message
-   * @private
-   */
-  _publishCancellation(message) {
-    publish(statuses.CANCELLED, {
-      id: this.id,
-      message
-    });
-  }
-
-  /**
-   * reject the promise with the error provided
+   * @function _getUnsubscribeOnReject
+   * @memberof QueueItem
+   * @instance
    *
-   * @param {function} reject
-   * @return {function(error: Error): void}
-   * @private
-   */
-  _rejectPromise(reject) {
-    return (error) => {
-      if (!this.isCancelled) {
-        this.status = statuses.FAILED;
-
-        reject(new QueueError(error));
-      }
-    };
-  }
-
-  /**
-   * resolve the promise with the data provided
-   *
-   * @param {function} resolve
-   * @return {function(data: any): void}
-   * @private
-   */
-  _resolvePromise(resolve) {
-    return (data) => {
-      if (!this.isCancelled) {
-        this.status = statuses.COMPLETED;
-
-        resolve(data);
-      }
-    };
-  }
-
-  /**
+   * @description
    * unsubscribe the cancellation once the promise is rejected
    *
    * @return {function(error: Error): Promise}
@@ -198,6 +115,13 @@ class QueueItem {
   }
 
   /**
+   * @private
+   *
+   * @function _getUnsubscribeOnResolve
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
    * unsubscribe the cancellation once the promise is resolved
    *
    * @return {function(data: any): Promise}
@@ -212,12 +136,88 @@ class QueueItem {
   }
 
   /**
-   * publjsh that this queueItem is running
+   * @private
+   *
+   * @function _publishCancellation
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
+   * publish the cancellation
+   *
+   * @param {string} message
+   * @private
+   */
+  _publishCancellation(message) {
+    publish(STATUSES.CANCELLED, {
+      id: this.id,
+      message
+    });
+  }
+
+  /**
+   * @private
+   *
+   * @function _rejectPromise
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
+   * reject the promise with the error provided
+   *
+   * @param {function} reject
+   * @return {function(error: Error): void}
+   * @private
+   */
+  _rejectPromise(reject) {
+    return (error) => {
+      if (!this.isCancelled) {
+        this.status = STATUSES.FAILED;
+
+        reject(new QueueError(error));
+      }
+    };
+  }
+
+  /**
+   * @private
+   *
+   * @function _resolvePromise
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
+   * resolve the promise with the data provided
+   *
+   * @param {function} resolve
+   * @return {function(data: any): void}
+   * @private
+   */
+  _resolvePromise(resolve) {
+    return (data) => {
+      if (!this.isCancelled) {
+        this.status = STATUSES.COMPLETED;
+
+        resolve(data);
+      }
+    };
+  }
+
+  /**
+   * @function run
+   * @memberof QueueItem
+   * @instance
+   *
+   * @description
+   * publish that this queueItem is running
    */
   run() {
-    this.status = statuses.RUNNING;
+    this.status = STATUSES.RUNNING;
 
-    publish(statuses.RUNNING, this.id);
+    publish(STATUSES.RUNNING, {
+      id: this.id,
+      message: `${this.id} resolved successfully.`
+    });
   }
 }
 

@@ -15,21 +15,24 @@ const sleep = (ms = 0) => {
 test('if Qonductor returns a proper object', (t) => {
   const queue = new Qonductor();
 
-  t.deepEqual(queue, {
-    autoStart: true,
-    completed: {},
-    completedCount: 0,
-    currentIndex: 0,
-    keepHistory: true,
-    isRunning: false,
-    maxConcurrency: 10,
-    pending: {},
-    pendingCount: 0,
-    queue: {},
-    running: {},
-    runningCount: 0,
-    type: 'fifo'
-  });
+  t.deepEqual(
+    {...queue},
+    {
+      autoStart: true,
+      completed: {},
+      completedCount: 0,
+      currentIndex: 0,
+      keepHistory: true,
+      isRunning: false,
+      maxConcurrency: 10,
+      pending: {},
+      pendingCount: 0,
+      queue: {},
+      running: {},
+      runningCount: 0,
+      type: 'fifo'
+    }
+  );
 });
 
 test('if static function getDefaults gets the defaults', (t) => {
@@ -76,12 +79,12 @@ test('if _addQueueItemCancel adds a function to the object passed', (t) => {
   t.is(typeof cancelFunction, 'function');
 });
 
-test('if _complete will convert the queueItem to completed', sinon.test(function(t) {
+test('if _complete will convert the queueItem to completed', (t) => {
   const queueItem = new QueueItem((done) => {
     done();
   });
 
-  this.stub(queueItem, 'run', function() {
+  const stub = sinon.stub(queueItem, 'run').callsFake(function() {
     this.status = 'RUNNING';
   });
 
@@ -97,10 +100,12 @@ test('if _complete will convert the queueItem to completed', sinon.test(function
   t.is(queue.runningCount, 0);
 
   t.deepEqual(queue.completed, {
-    '0': queueItem
+    0: queueItem
   });
   t.is(queue.completedCount, 1);
-}));
+
+  stub.restore();
+});
 
 test('if _getNextIndex gets the correct index based on the type', (t) => {
   const keys = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
@@ -112,17 +117,17 @@ test('if _getNextIndex gets the correct index based on the type', (t) => {
 });
 
 let secondQueue = new Qonductor({
-      autoStart: false,
-      maxConcurrency: 1
-    }),
-    secondQueueItem;
+  autoStart: false,
+  maxConcurrency: 1
+});
 
 test('if add will add an item to the queue', (t) => {
-  secondQueueItem = secondQueue.add((done) => {
-    setTimeout(() => {
-      done('finished');
-    }, 10000);
-  })
+  secondQueue
+    .add((done) => {
+      setTimeout(() => {
+        done('finished');
+      }, 10000);
+    })
     .catch(() => {});
 
   t.deepEqual(Object.keys(secondQueue.completed), []);
@@ -168,4 +173,3 @@ test('if clear will cancel all items in the queue', async (t) => {
 
   t.is(secondQueue.completed[0].status, 'CANCELLED');
 });
-

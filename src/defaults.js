@@ -1,58 +1,49 @@
-const DEFAULTS = {
-  autoStart: true,
-  keepHistory: true,
-  maxConcurrency: 10,
-  type: 'fifo'
-};
+// constants
+import {DEFAULTS} from './constants';
 
-let currentDefaults = {
-  ...DEFAULTS
-};
+export let currentDefaults = {...DEFAULTS};
 
 /**
+ * @function getDefaults
+ *
+ * @description
  * get the current defaults
  *
  * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
  */
-const getDefaults = () => {
+export const getDefaults = () => {
   return currentDefaults;
 };
 
 /**
+ * @function resetDefaults
+ *
+ * @description
  * reset the defaults to their original setting
- * 
+ *
  * @return {object}
  */
-const resetDefaults = () => {
-  currentDefaults = {
-    ...DEFAULTS
-  };
-  
+export const resetDefaults = () => {
+  currentDefaults = {...DEFAULTS};
+
   return currentDefaults;
 };
 
 /**
+ * @function setDefaults
+ *
+ * @description
  * assign the keys in newDefaults to those in defaults if they exist in defaults
  *
  * @param {object} newDefaults={}
  * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
  */
-const setDefaults = (newDefaults = {}) => {
-  Object.keys(newDefaults).forEach((key) => {
-    if (currentDefaults.hasOwnProperty(key)) {
-      currentDefaults[key] = newDefaults[key];
+export const setDefaults = (newDefaults = {}) => {
+  return Object.keys(newDefaults).reduce((mergedDefaults, key) => {
+    if (DEFAULTS.hasOwnProperty(key)) {
+      mergedDefaults[key] = newDefaults[key];
     }
-  });
-  
-  return currentDefaults;
-};
 
-export {getDefaults};
-export {resetDefaults};
-export {setDefaults};
-
-export default {
-  getDefaults,
-  resetDefaults,
-  setDefaults
+    return mergedDefaults;
+  }, currentDefaults);
 };

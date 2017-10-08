@@ -17,7 +17,7 @@ Incorporate it into your project using any method that you like:
 import Qonductor from 'qonductor';
 
 // CommonJS
-const Qonductor = require('qonductor');
+const Qonductor = require('qonductor').default;
 
 // script
 const Qonductor = window.Qonductor;
@@ -131,12 +131,10 @@ The only thing that will prevent `Qonductor` from working in IE9-11 is the lack 
 
 Standard stuff, clone the repo and `npm install` dependencies. The npm scripts available:
 * `build` => run webpack to build qonductor.js and sourcemap qonductor.js.map with NODE_ENV=development
-* `build-minifed` => run webpack to build qonductor.min.js with NODE_ENV=production
+* `build:minifed` => run webpack to build qonductor.min.js with NODE_ENV=production
 * `dev` => run webpack dev server to run example app (playground!)
 * `lint` => run ESLint against all files in the `src` folder
 * `prepublish` => run `lint`, `test`, `transpile`, `build`, and `build-minified`
 * `test` => run AVA test functions with `NODE_ENV=test`
-* `test-production` => run AVA test functions with `NODE_ENV=production`
 * `test:watch` => same as `test`, but runs persistent watcher
-* `test-production:watch` => same as `test`, but runs persistent watcher
 * `transpile` => run babel against all files in `src` to create files in `lib`

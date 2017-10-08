@@ -1,28 +1,15 @@
-import {
-  statuses
-} from './constants';
+// classes
+import CustomError from './CustomError';
 
-class CustomError extends Error {
-  constructor(message) {
-    super();
+// constants
+import {STATUSES} from './constants';
 
-    if (Error.hasOwnProperty('captureStackTrace')) {
-      Error.captureStackTrace(this, this.constructor);
-    } else {
-      
-      Object.defineProperty(this, 'stack', {
-        value: (new Error()).stack
-      });
-    }
-
-    Object.defineProperty(this, 'message', {
-      value: message
-    });
-  }
-}
-
+/**
+ * @class QueueError
+ * @classdesc the instance of the custom error
+ */
 class QueueError extends CustomError {
-  constructor(message = '', type = statuses.FAILED) {
+  constructor(message = '', type = STATUSES.FAILED) {
     super(`Queue promise was rejected with status ${type}${message ? ': ' : '.'}${message}`);
   }
 }

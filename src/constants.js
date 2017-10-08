@@ -1,4 +1,17 @@
-const STATUSES = {
+/**
+ * @constant {Object} DEFAULTS
+ */
+export const DEFAULTS = {
+  autoStart: true,
+  keepHistory: true,
+  maxConcurrency: 10,
+  type: 'fifo'
+};
+
+/**
+ * @constant {Object} STATUSES
+ */
+export const STATUSES = {
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
@@ -6,16 +19,11 @@ const STATUSES = {
   RUNNING: 'RUNNING'
 };
 
-const TYPES = {
+/**
+ * @constant {Object} TYPES
+ */
+export const TYPES = {
   FIFO: 'fifo',
   LIFO: 'lifo',
   SIRO: 'siro'
-};
-
-export {STATUSES as statuses};
-export {TYPES as types};
-
-export default {
-  statuses: STATUSES,
-  types: TYPES
 };
