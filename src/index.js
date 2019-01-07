@@ -1,21 +1,30 @@
-// external dependencies
-import isFunction from 'lodash/isFunction';
-import isPlainObject from 'lodash/isPlainObject';
-
 // classes
 import QueueItem from './QueueItem';
 
 // constants
-import {STATUSES, TYPES} from './constants';
+import {
+  STATUSES,
+  TYPES,
+} from './constants';
 
 // defaults
-import {getDefaults, resetDefaults, setDefaults} from './defaults';
+import {
+  getDefaults,
+  resetDefaults,
+  setDefaults,
+} from './defaults';
+
+const {floor, max, min, random} = Math;
+const {keys} = Object;
 
 class Qonductor {
   constructor(options = {}) {
-    const {type, ...directlyAssignedValues} = {...getDefaults(), ...options};
+    const {type, ...directlyAssignedValues} = {
+      ...getDefaults(),
+      ...options,
+    };
 
-    Object.keys(directlyAssignedValues).forEach((key) => {
+    keys(directlyAssignedValues).forEach((key) => {
       this[key] = directlyAssignedValues[key];
     });
 
@@ -119,13 +128,13 @@ class Qonductor {
 
     switch (type) {
       case TYPES.LIFO:
-        return Math.max.apply(this, keys);
+        return max(...keys);
 
       case TYPES.SIRO:
-        return keys[Math.floor(Math.random() * keys.length)];
+        return keys[floor(random() * keys.length)];
 
       default:
-        return Math.min.apply(this, keys);
+        return min(...keys);
     }
   }
 
@@ -145,7 +154,7 @@ class Qonductor {
     let running = this.runningCount;
 
     while (++running <= this.maxConcurrency) {
-      const index = this._getNextIndex(Object.keys(this.pending), this.type);
+      const index = this._getNextIndex(keys(this.pending), this.type);
 
       if (index === -1) {
         break;
@@ -199,7 +208,7 @@ class Qonductor {
    * @returns {object}
    */
   static setDefaults(newDefaults = {}) {
-    if (!isPlainObject(newDefaults)) {
+    if (!newDefaults || newDefaults.constructor !== Object) {
       throw new SyntaxError('Defaults assignment must be passed an object.');
     }
 
@@ -221,7 +230,7 @@ class Qonductor {
   add(id, fn) {
     const index = this.currentIndex;
 
-    const queueId = isFunction(id) ? index : id;
+    const queueId = typeof id === 'function' ? index : id;
     const queueFunction = fn || id;
 
     const queueItem = new QueueItem(queueId, queueFunction, this._complete.bind(this));

@@ -1,6 +1,9 @@
 // external dependencies
-import isFunction from 'lodash/isFunction';
-import {publish, subscribe, unsubscribe} from 'waddup';
+import {
+  publish,
+  subscribe,
+  unsubscribe,
+} from 'waddup';
 
 // classes
 import QueueError from './QueueError';
@@ -9,7 +12,11 @@ import QueueError from './QueueError';
 import {STATUSES} from './constants';
 
 // utils
-import {getDone, getOnFail, getOnSuccess} from './utils';
+import {
+  getDone,
+  getOnFail,
+  getOnSuccess,
+} from './utils';
 
 /**
  * @class QueueItem
@@ -63,11 +70,7 @@ class QueueItem {
    * @private
    */
   _createPromiseWrapper(fn, onSuccess, onFail) {
-    const queuedFunction = isFunction(fn)
-      ? fn
-      : (done) => {
-        return done(fn);
-      };
+    const queuedFunction = typeof fn === 'function' ? fn : (done) => done(fn);
 
     return new Promise((resolve, reject) => {
       const done = getDone(this._resolvePromise(resolve), this._rejectPromise(reject));
@@ -151,7 +154,7 @@ class QueueItem {
   _publishCancellation(message) {
     publish(STATUSES.CANCELLED, {
       id: this.id,
-      message
+      message,
     });
   }
 
@@ -216,7 +219,7 @@ class QueueItem {
 
     publish(STATUSES.RUNNING, {
       id: this.id,
-      message: `${this.id} resolved successfully.`
+      message: `${this.id} resolved successfully.`,
     });
   }
 }

@@ -10,12 +10,12 @@ class CustomError extends Error {
       Error.captureStackTrace(this, this.constructor);
     } else {
       Object.defineProperty(this, 'stack', {
-        value: new Error().stack
+        value: new Error().stack,
       });
     }
 
     Object.defineProperty(this, 'message', {
-      value: message
+      value: message,
     });
   }
 }

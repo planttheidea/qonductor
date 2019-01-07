@@ -8,14 +8,9 @@ module.exports = {
 
   entry: [path.resolve(__dirname, 'src', 'index.js')],
 
-  externals: {
-    waddup: {
-      amd: 'waddup',
-      commonjs: 'waddup',
-      commonjs2: 'waddup',
-      root: 'waddup'
-    }
-  },
+  externals: ['waddup'],
+
+  mode: 'development',
 
   module: {
     rules: [
@@ -28,16 +23,16 @@ module.exports = {
           emitError: true,
           failOnError: true,
           failOnWarning: true,
-          formatter: require('eslint-friendly-formatter')
+          formatter: require('eslint-friendly-formatter'),
         },
-        test: /\.js$/
+        test: /\.js$/,
       },
       {
         include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'DEV_ONLY')],
         loader: 'babel-loader',
-        test: /\.js$/
-      }
-    ]
+        test: /\.js$/,
+      },
+    ],
   },
 
   output: {
@@ -45,8 +40,8 @@ module.exports = {
     library: 'Qonductor',
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-    umdNamedDefine: true
+    umdNamedDefine: true,
   },
 
-  plugins: [new webpack.EnvironmentPlugin(['NODE_ENV'])]
+  plugins: [new webpack.EnvironmentPlugin(['NODE_ENV'])],
 };

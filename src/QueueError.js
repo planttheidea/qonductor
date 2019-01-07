@@ -10,7 +10,7 @@ import {STATUSES} from './constants';
  */
 class QueueError extends CustomError {
   constructor(message = '', type = STATUSES.FAILED) {
-    super(`Queue promise was rejected with status ${type}${message ? ': ' : '.'}${message}`);
+    super(`Queue promise was rejected with status ${type}${message ? `: ${message}.` : '.'}`);
   }
 }
 
