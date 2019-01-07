@@ -16,7 +16,6 @@
     "url": "https://github.com/planttheidea/qonductor/issues"
   },
   "dependencies": {
-    "lodash": "^4.17.4",
     "waddup": "^2.0.0"
   },
   "description": "A simple promise-based queueing system",
@@ -29,18 +28,19 @@
     "babel-preset-env": "^1.6.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.5.0",
-    "eslint": "^4.8.0",
-    "eslint-config-rapid7": "^2.11.1",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-loader": "^1.9.0",
-    "html-webpack-plugin": "^2.30.1",
+    "eslint": "^5.12.0",
+    "eslint-config-rapid7": "^3.1.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^2.1.1",
+    "html-webpack-plugin": "^3.2.0",
     "in-publish": "^2.0.0",
     "optimize-js-plugin": "^0.0.4",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "sinon": "^4.0.1",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.9.1"
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0",
+    "webpack-dev-server": "^3.1.14"
   },
   "homepage": "https://github.com/planttheidea/qonductor#readme",
   "keywords": [
@@ -69,7 +69,7 @@
     "prepublish:compile": "npm run lint && npm run test && npm run clean && npm run transpile && npm run dist",
     "test": "NODE_ENV=test ava",
     "test:watch": "npm run test -- --watch",
-    "transpile": "./node_modules/babel-cli/lib/babel/index.js -d lib/ src/"
+    "transpile": "babel src --out-dir lib"
   },
-  "version": "1.1.2"
+  "version": "1.1.3"
 }

@@ -5,7 +5,7 @@ export const DEFAULTS = {
   autoStart: true,
   keepHistory: true,
   maxConcurrency: 10,
-  type: 'fifo'
+  type: 'fifo',
 };
 
 /**
@@ -16,7 +16,7 @@ export const STATUSES = {
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
   PENDING: 'PENDING',
-  RUNNING: 'RUNNING'
+  RUNNING: 'RUNNING',
 };
 
 /**
@@ -25,5 +25,5 @@ export const STATUSES = {
 export const TYPES = {
   FIFO: 'fifo',
   LIFO: 'lifo',
-  SIRO: 'siro'
+  SIRO: 'siro',
 };

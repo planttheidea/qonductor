@@ -1,6 +1,8 @@
 // constants
 import {DEFAULTS} from './constants';
 
+const {keys} = Object;
+
 export let currentDefaults = {...DEFAULTS};
 
 /**
@@ -11,9 +13,7 @@ export let currentDefaults = {...DEFAULTS};
  *
  * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
  */
-export const getDefaults = () => {
-  return currentDefaults;
-};
+export const getDefaults = () => currentDefaults;
 
 /**
  * @function resetDefaults
@@ -23,11 +23,7 @@ export const getDefaults = () => {
  *
  * @return {object}
  */
-export const resetDefaults = () => {
-  currentDefaults = {...DEFAULTS};
-
-  return currentDefaults;
-};
+export const resetDefaults = () => (currentDefaults = {...DEFAULTS});
 
 /**
  * @function setDefaults
@@ -38,12 +34,11 @@ export const resetDefaults = () => {
  * @param {object} newDefaults={}
  * @return {{autoStart: boolean, keepHistory: boolean, maxConcurrency: number, type: string}}
  */
-export const setDefaults = (newDefaults = {}) => {
-  return Object.keys(newDefaults).reduce((mergedDefaults, key) => {
+export const setDefaults = (newDefaults = {}) =>
+  keys(newDefaults).reduce((mergedDefaults, key) => {
     if (DEFAULTS.hasOwnProperty(key)) {
       mergedDefaults[key] = newDefaults[key];
     }
 
     return mergedDefaults;
   }, currentDefaults);
-};

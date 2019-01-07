@@ -14,12 +14,12 @@ module.exports = Object.assign({}, defaultConfig, {
     inline: true,
     lazy: false,
     noInfo: false,
-    quiet: false,
     port: PORT,
+    quiet: false,
     stats: {
       colors: true,
-      progress: true
-    }
+      progress: true,
+    },
   },
 
   entry: [path.resolve(__dirname, 'DEV_ONLY', 'App.js')],
@@ -27,17 +27,17 @@ module.exports = Object.assign({}, defaultConfig, {
   externals: undefined,
 
   module: Object.assign({}, defaultConfig.module, {
-    rules: defaultConfig.module.rules.map((rule) => {
-      return rule.loader === 'eslint-loader'
+    rules: defaultConfig.module.rules.map((rule) =>
+      rule.loader === 'eslint-loader'
         ? Object.assign({}, rule, {
           options: Object.assign({}, rule.options, {
             emitError: undefined,
-            failOnWarning: false
-          })
+            failOnWarning: false,
+          }),
         })
-        : rule;
-    })
+        : rule
+    ),
   }),
 
-  plugins: [...defaultConfig.plugins, new HtmlWebpackPlugin()]
+  plugins: [...defaultConfig.plugins, new HtmlWebpackPlugin()],
 });

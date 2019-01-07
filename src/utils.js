@@ -9,15 +9,7 @@
  * @param {function} fail
  * @return {function(data: string, error: QueueError): void}
  */
-export const getDone = (success, fail) => {
-  return (data, error) => {
-    if (error) {
-      return fail(error);
-    }
-
-    return success(data);
-  };
-};
+export const getDone = (success, fail) => (data, error) => (error ? fail(error) : success(data));
 
 /**
  * @function getOnFail
@@ -30,12 +22,10 @@ export const getDone = (success, fail) => {
  * @param {function} onComplete
  * @return {function(error: Error): Promise}
  */
-export const getOnFail = (queueItem, onComplete) => {
-  return (error) => {
-    onComplete(queueItem.id, queueItem);
+export const getOnFail = (queueItem, onComplete) => (error) => {
+  onComplete(queueItem.id, queueItem);
 
-    return Promise.reject(error);
-  };
+  return Promise.reject(error);
 };
 
 /**
@@ -49,10 +39,8 @@ export const getOnFail = (queueItem, onComplete) => {
  * @param {function} onComplete
  * @return {function(data: any): any}
  */
-export const getOnSuccess = (queueItem, onComplete) => {
-  return (data) => {
-    onComplete(queueItem.id, queueItem);
+export const getOnSuccess = (queueItem, onComplete) => (data) => {
+  onComplete(queueItem.id, queueItem);
 
-    return data;
-  };
+  return data;
 };
